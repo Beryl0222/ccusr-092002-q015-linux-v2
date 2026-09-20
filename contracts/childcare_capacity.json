@@ -1,0 +1,20 @@
+{
+  "service": "inclusive-childcare-allocation",
+  "source_context": "http://health.people.com.cn/n1/2026/0920/c14739-40801752.html",
+  "sample": {
+    "site_id": "YX-STREET-03",
+    "classes": [
+      {
+        "kind": "托小班",
+        "age_months": [
+          18,
+          30
+        ],
+        "capacity": 18
+      }
+    ],
+    "subsidy": {
+      "per_slot_year": 2400
+    }
+  }
+}
