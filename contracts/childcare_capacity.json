@@ -6,15 +6,125 @@
     "classes": [
       {
         "kind": "托小班",
-        "age_months": [
-          18,
-          30
-        ],
-        "capacity": 18
+        "age_months": [18, 30],
+        "capacity_proposed": 18
       }
     ],
     "subsidy": {
       "per_slot_year": 2400
     }
-  }
+  },
+  "policy": {
+    "min_m2_per_slot_filed_area": 7.0,
+    "min_m2_per_slot_activity": 3.0,
+    "staff_child_ratio": [1, 7],
+    "qualified_teachers_per_class": 2,
+    "subsidy": {"per_slot_year": 2400},
+    "comment": "面积/师生比阈值可按地方标准配置；容量取四项约束最小值"
+  },
+  "parties": {
+    "owner": "产权方",
+    "designer": "设计单位",
+    "contractor": "承包方",
+    "fire": "消防救援机构",
+    "health": "卫生健康部门(卫生评价)",
+    "health_commission": "卫健部门(机构备案)",
+    "operator": "托育运营方",
+    "price_authority": "价格/发改部门"
+  },
+  "gate_chain": [
+    {
+      "gate": "property_consent",
+      "name": "产权同意",
+      "party": "owner",
+      "scope": "site",
+      "deps": [],
+      "duration_days": 15,
+      "expires_days": null,
+      "description": "产权方书面同意将党群中心/闲置公房改造为普惠托育用途"
+    },
+    {
+      "gate": "design_change",
+      "name": "设计变更",
+      "party": "designer",
+      "scope": "site",
+      "deps": ["property_consent"],
+      "duration_days": 20,
+      "expires_days": null,
+      "description": "分隔、消防动线、采光改造图纸签署；班型变更后须重新签署"
+    },
+    {
+      "gate": "construction",
+      "name": "施工节点",
+      "party": "contractor",
+      "scope": "class",
+      "deps": ["design_change"],
+      "duration_days": 45,
+      "expires_days": null,
+      "description": "按图施工并节点报验；同一报验单重复提交不得重复推进"
+    },
+    {
+      "gate": "fire_inspection",
+      "name": "消防检查",
+      "party": "fire",
+      "scope": "class",
+      "deps": ["construction"],
+      "expires_days": 365,
+      "description": "消防安全检查合格，意见载明该班型最大安全容量"
+    },
+    {
+      "gate": "health_inspection",
+      "name": "卫生评价",
+      "party": "health",
+      "scope": "class",
+      "deps": ["construction"],
+      "expires_days": 365,
+      "description": "托育机构卫生评价合格"
+    },
+    {
+      "gate": "institution_license",
+      "name": "机构许可备案",
+      "party": "health_commission",
+      "scope": "class",
+      "deps": ["fire_inspection", "health_inspection"],
+      "expires_days": null,
+      "description": "机构登记与托位备案，备案明细到班型"
+    },
+    {
+      "gate": "staffing",
+      "name": "人员到岗",
+      "party": "operator",
+      "scope": "class",
+      "deps": ["institution_license"],
+      "expires_days": null,
+      "description": "持证教师与保育人员到岗，按师生比折算可承载托位"
+    },
+    {
+      "gate": "fee_commitment",
+      "name": "收费承诺",
+      "party": "price_authority",
+      "scope": "site",
+      "deps": ["institution_license"],
+      "expires_days": null,
+      "description": "普惠收费标准与价格承诺签署，全园适用"
+    }
+  ],
+  "event_types": [
+    "site_registered",
+    "plan_revised",
+    "gate_signed",
+    "gate_rejected",
+    "inspection_submitted",
+    "class_added",
+    "class_changed",
+    "class_opened"
+  ],
+  "notes": [
+    "事件只追加(append-only)，业务时间 on 与记录时间 recorded_at 分离，支持按历史日期还原",
+    "gate_signed 按 闸门+班型 去重：已合格再签署不得重复触发里程碑与拨付",
+    "inspection_submitted 按报验单号 report_no 幂等，且永远不推进闸门状态",
+    "材料过期或检查不通过仅冻结 scope=class 的受影响班型；site 级闸门影响全园",
+    "班型变更使该班型的 class 级签署与设计变更失效，关键路径重算",
+    "补助按 class_opened 等可核验里程碑生成分录；容量核减按剩余年度比例生成追回分录"
+  ]
 }
